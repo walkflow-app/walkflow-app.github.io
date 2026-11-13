@@ -1,0 +1,563 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https://tiles.openfreemap.org; font-src 'self'; connect-src 'self' https://tiles.openfreemap.org https://raw.githubusercontent.com/walkflow-app/route-store/main/; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#12141a">
+<link rel="icon" href="/app/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/app/icons/apple-touch-icon.png">
+<meta name="description" content="Open-source control for FTMS treadmills via Web Bluetooth">
+<title>Walkflow</title>
+  <script type="module" crossorigin src="/app/assets/index-D3QgdhFk.js"></script>
+  <link rel="stylesheet" crossorigin href="/app/assets/index-DuwqZ6k9.css">
+<link rel="manifest" href="/app/manifest.webmanifest"></head>
+<body>
+<!-- Icons, used via <use href="#i-…">. Filled media symbols, the rest drawn as strokes in the current text colour. -->
+<svg class="sprite" aria-hidden="true">
+  <symbol id="i-pause" viewBox="0 0 24 24"><rect x="5.5" y="4" width="4.5" height="16" rx="1.2" fill="currentColor"/><rect x="14" y="4" width="4.5" height="16" rx="1.2" fill="currentColor"/></symbol>
+  <symbol id="i-stop" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2.5" fill="currentColor"/></symbol>
+  <symbol id="i-bluetooth" viewBox="0 0 24 24"><path d="M7 7l10 10-5 5V2l5 5L7 17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-demo" viewBox="0 0 24 24"><path d="M9 3h6M10 3v6.5L4.6 18.4A1.7 1.7 0 0 0 6.1 21h11.8a1.7 1.7 0 0 0 1.5-2.6L14 9.5V3M7.5 15h9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+  <symbol id="i-chevron" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-walkflow" viewBox="0 0 24 24"><path d="M7 4.5l5 5-5 5M13 4.5l5 5-5 5M6 19h12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19.5 8.5a2.1 2.1 0 0 0-3-3L5 17v3zM14.5 7.5l3 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="16" cy="7" r="2.2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="10" cy="17" r="2.2" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24"><path d="M9.95 5.31 L10.33 2.55 L13.67 2.55 L14.05 5.31 L15.29 5.82 L17.51 4.14 L19.86 6.49 L18.18 8.71 L18.69 9.95 L21.45 10.33 L21.45 13.67 L18.69 14.05 L18.18 15.29 L19.86 17.51 L17.51 19.86 L15.29 18.18 L14.05 18.69 L13.67 21.45 L10.33 21.45 L9.95 18.69 L8.71 18.18 L6.49 19.86 L4.14 17.51 L5.82 15.29 L5.31 14.05 L2.55 13.67 L2.55 10.33 L5.31 9.95 L5.82 8.71 L4.14 6.49 L6.49 4.14 L8.71 5.82Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+  <symbol id="i-pace-slow" viewBox="2.5 6 19 12.5"><path d="M4 17a8 8 0 1 1 16 0M12 17L7.7 14.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-pace-mid" viewBox="2.5 6 19 12.5"><path d="M4 17a8 8 0 1 1 16 0M12 17v-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-pace-run" viewBox="2.5 6 19 12.5"><path d="M4 17a8 8 0 1 1 16 0M12 17l4.3-2.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-gauge" viewBox="0 0 24 24"><path d="M4 17a8 8 0 1 1 16 0M12 17l4-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-warning" viewBox="0 0 24 24"><path d="M10.3 3.9L2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 9v4.5M12 17.2v.1" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+  <symbol id="i-route" viewBox="0 0 24 24"><circle cx="6" cy="18" r="2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="6" r="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 18h7a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="6" cy="12" r="2.6" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="5.5" r="2.6" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="18.5" r="2.6" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+  <symbol id="i-package" viewBox="0 0 24 24"><path d="M12 3l8 4v10l-8 4-8-4V7l8-4zM4 7l8 4 8-4M12 11v10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M5 7h14M10 7V4.5h4V7M7 7l.8 12.2a1 1 0 0 0 1 .8h6.4a1 1 0 0 0 1-.8L17 7M10.5 11v5M13.5 11v5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</svg>
+<!-- Texts come from src/i18n/locales/*.ts (data-i18n*); the English text here is only the fallback. -->
+<div class="app">
+  <!-- Outside the training view while connected (src/ui/views.ts stopPlacement): Stop stays in reach.
+       Sticky at the top on wide screens, fixed to the bottom edge on narrow ones. Above the header and above
+       the header menus, so an open menu can never cover it. -->
+  <div id="stopBar" class="stopbar" role="region" aria-label="Treadmill" data-i18n-aria="stopBar.label">
+    <span class="sb-state"><span class="dot"></span><span id="sbState">Connected</span></span>
+    <span class="sb-speed" id="sbSpeed">–</span>
+    <span class="hint sb-more" id="sbMore"></span>
+    <span class="hint sb-keys" data-i18n-rich="stopBar.keys">Space or Esc = stop</span>
+    <span class="sb-gap"></span>
+    <a href="#" class="btn sb-controls" aria-label="To the controls" data-i18n-aria="stopBar.toControls"><svg class="icon" aria-hidden="true"><use href="#i-gauge"/></svg><span data-i18n="stopBar.toControls">To the controls</span></a>
+    <button id="sbStop" class="stop" type="button"><svg class="icon" aria-hidden="true"><use href="#i-stop"/></svg><span data-i18n="control.stop">Stop</span></button>
+  </div>
+
+  <header class="top">
+    <img src="/app/favicon.svg" alt="" width="32" height="32" class="logo">
+    <h1>Walkflow</h1>
+    <nav class="views" aria-label="Views" data-i18n-aria="views.label">
+      <a href="#" data-view="training" data-i18n="views.training">Training</a>
+      <a href="#workouts" data-view="workouts" data-i18n="views.workouts">Workouts</a>
+      <a href="#routes" data-view="routes" data-i18n="views.routes">Routes</a>
+      <a href="#community" data-view="community" data-i18n="views.community">Community</a>
+      <a href="#history" data-view="history" data-i18n="views.history">History</a>
+    </nav>
+    <!-- Connection menu: opens from the status; connect and demo, or the device and Disconnect -->
+    <span class="menu-anchor conn">
+      <button id="statusBtn" class="status" type="button" aria-haspopup="true"><span role="status"><span id="status" class="st-long">Not connected</span><span id="statusShort" class="st-short" aria-hidden="true">Not connected</span></span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></button>
+      <div id="connMenu" class="menu conn-menu" role="group" aria-label="Connection" data-i18n-aria="connection.menuLabel" hidden>
+        <div class="menu-off">
+          <strong class="menu-title" data-i18n="connection.title">Connect your treadmill</strong>
+          <button id="connect" class="primary big"><svg class="icon" aria-hidden="true"><use href="#i-bluetooth"/></svg><span data-i18n="connection.connect">Connect</span></button>
+          <button id="demo"><svg class="icon" aria-hidden="true"><use href="#i-demo"/></svg><span data-i18n="connection.demo">Demo (no treadmill)</span></button>
+          <p class="hint" data-i18n="connection.vendorAppHint">Close the manufacturer’s app first, the treadmill usually allows only one connection at a time.</p>
+        </div>
+        <div class="menu-on">
+          <div class="device">
+            <span class="device-icon"><svg class="icon" aria-hidden="true"><use href="#i-bluetooth"/></svg></span>
+            <span><strong id="deviceName"></strong><span class="hint" id="deviceInfo"></span></span>
+          </div>
+          <button id="disconnect" disabled><svg class="icon" aria-hidden="true"><use href="#i-close"/></svg><span data-i18n="connection.disconnect">Disconnect</span></button>
+          <p class="hint" data-i18n="connection.disconnectHint">If the belt is still running, the app offers to stop it first.</p>
+        </div>
+      </div>
+    </span>
+    <!-- Settings: a large dialog (src/ui/settings/settings-ui.ts). Locked while the belt is running. -->
+    <span class="menu-anchor settings-anchor" id="settingsAnchor">
+      <button id="settingsBtn" class="icon-btn" type="button" aria-haspopup="dialog" aria-label="Settings" data-i18n-aria="settings.open"><svg class="icon" aria-hidden="true"><use href="#i-sliders"/></svg></button>
+    </span>
+  </header>
+
+  <div id="updateBanner" class="banner info" hidden>
+    <span id="updateText"></span>
+    <button id="updateAction" type="button"></button>
+  </div>
+
+  <div id="alarm" class="banner alarm" role="alert" hidden>
+    <strong data-i18n="alarm.title">Connection lost. The belt may still be running!</strong>
+    <p data-i18n="alarm.text">The app can no longer stop it. Stop it on the treadmill: press the stop button or pull the safety key.</p>
+    <button id="alarmAck" type="button" data-i18n="alarm.ack">Understood</button>
+  </div>
+
+  <div id="stopAlarm" class="banner alarm" role="alert" hidden>
+    <strong data-i18n="alarm.stopTitle">The treadmill did not take the stop. The belt may still be running!</strong>
+    <p data-i18n="alarm.stopText">Press Stop again, or stop it on the treadmill: press the stop button or pull the safety key.</p>
+    <button id="stopAlarmAck" type="button" data-i18n="alarm.ack">Understood</button>
+  </div>
+
+  <div id="unsupported" class="banner warn" hidden>
+    <strong id="unsupportedTitle"></strong>
+    <p id="unsupportedText"></p>
+    <p data-i18n-rich="unsupported.demoHint">Without a treadmill or without Web Bluetooth you can try the demo.</p>
+  </div>
+
+  <div id="hiddenBanner" class="banner warn" hidden>
+    <span id="hiddenText"></span>
+    <button id="hiddenAck" type="button" data-i18n="common.ok">OK</button>
+  </div>
+
+  <!-- Wide screens: main column + sticky controls on the right. Narrow screens: one column, and while connected
+       the dock (start/pause/stop, ±) is fixed to the bottom edge so Stop never scrolls out of view.
+       The controls only show in the training view; elsewhere the stop bar above takes over. -->
+  <div class="layout">
+    <div class="main-col">
+      <div class="notice" id="safetyNotice"><svg class="icon" aria-hidden="true"><use href="#i-warning"/></svg><span data-i18n-rich="notice">If the connection drops, this app cannot stop the belt. Then you can only stop it on the treadmill: stop button or safety key. Keep both within reach.</span></div>
+
+      <section class="card live">
+        <!-- Over the figures: green while the belt gets ready to start (fading out), red while it stops (getting stronger),
+             grey without a connection (src/core/safety/belt-banner.ts, set in src/main.ts) -->
+        <div class="belt-banner bb-offline" id="beltBanner" role="status">
+          <div class="bb-text" id="bbText"></div>
+          <button type="button" class="linkish bb-connect" id="openConn" data-i18n="connection.connectNow">Connect now</button>
+        </div>
+        <div class="hero">
+          <div class="hero-speed">
+            <div class="v" id="vSpeed">–</div>
+            <div class="l" data-i18n="stats.speed">km/h (actual)</div>
+            <!-- Status: what the program does now (belt starting, done, cancelled …), and while not connected how to connect -->
+            <p class="hint status-line" id="progStatus" role="status"></p>
+          </div>
+          <div class="hero-stats">
+            <div class="stat"><div class="v" id="vTime">–</div><div class="l" data-i18n="stats.time">Time</div></div>
+            <div class="stat"><div class="v" id="vDist">–</div><div class="l" data-i18n="stats.dist">km</div></div>
+            <div class="stat"><div class="v" id="vKcal">–</div><div class="l" data-i18n="stats.kcal">kcal</div></div>
+            <div class="stat" id="statIncl"><div class="v" id="vIncl">–</div><div class="l" data-i18n="stats.incline">Incline %</div></div>
+            <div class="stat"><div class="v" id="vHr">–</div><div class="l" data-i18n="stats.heartRate">Heart rate (bpm)</div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- The main element of the training view: the map when a route is chosen and the map is on, the steps while a
+           workout runs, otherwise the speed chart (data-mode, set in src/main.ts). Route progress sits below it. -->
+      <section class="card stage" id="stage" data-mode="chart">
+        <div class="today-plan" id="todayPlan" hidden>
+          <span class="hint" id="todayPlanText"></span>
+          <button id="todayPlanUse" type="button" class="icon-btn primary"><svg class="icon" aria-hidden="true"><use href="#i-walkflow"/></svg></button>
+        </div>
+        <!-- What the Start button starts: a workout or a route chosen in its own view, or nothing (free training) -->
+        <div class="stage-head" id="stageHead" hidden>
+          <div class="sh-title"><span class="badge" id="shKind"></span><strong id="shName"></strong></div>
+          <button id="shClear" type="button" class="linkish"></button>
+        </div>
+        <!-- Route progress sits above the map; the description and the length below it (order in style.css) -->
+        <div class="grid" id="routeProgress" hidden>
+          <progress id="routeBar" max="1000" value="0"></progress>
+          <div id="routeText" class="route-text"></div>
+          <div id="routeWaypoint" class="route-waypoint" hidden></div>
+        </div>
+        <div class="stage-info" id="stageInfo" hidden>
+          <div id="shInfo"></div>
+          <div class="hint" id="shDesc"></div>
+          <div class="hint" id="routeEstimate"></div>
+        </div>
+        <div id="routeMap" class="route-map stage-map" role="region" hidden></div>
+        <div id="stageInterval" class="interval" role="group" aria-label="Workout progress" data-i18n-aria="interval.label" hidden>
+          <div class="iv-now">
+            <div><div class="iv-v" id="ivSpeed">–</div><div class="l" data-i18n="interval.targetUnit">km/h target</div></div>
+            <div class="iv-right"><div class="iv-v" id="ivLeft">–</div><div class="l" id="ivLeftLabel"></div></div>
+          </div>
+          <progress id="ivBar" max="1000" value="0"></progress>
+          <svg id="ivStrip" class="iv-strip" viewBox="0 0 400 60" preserveAspectRatio="none" aria-hidden="true"></svg>
+          <div class="iv-next"><span class="l" data-i18n="interval.next">Next</span><ol id="ivNext"></ol></div>
+        </div>
+        <div id="stageChart">
+          <h2 data-i18n="chart.title">Speed over the last 5 minutes</h2>
+          <canvas id="chart" width="560" height="150"></canvas>
+          <p class="hint" id="stageFreeHint" data-i18n="stage.freeHint">Free training.</p>
+        </div>
+        <div class="grid" id="routeLive" hidden>
+          <div class="hint" id="routeDetail"></div>
+          <div id="routeProfile" class="profile"></div>
+          <div class="row">
+            <button id="routeRestart" type="button" data-i18n="routes.restart">Restart route</button>
+            <button id="routeMapToggle" type="button" class="map-toggle" aria-pressed="false" hidden></button>
+          </div>
+          <div class="hint map-note" id="routeMapNote" role="status" hidden></div>
+        </div>
+      </section>
+
+      <div class="more">
+        <!-- Developer mode only (Settings → General): raw commands to the treadmill -->
+        <details class="card wide" id="consoleCard">
+          <summary data-i18n="console.title">Experiment console (Control Point 0x2AD9)</summary>
+          <div class="grid">
+            <div class="row">
+              <input type="text" id="raw" class="needs-conn grow2" placeholder="Hex bytes, e.g. 02 2C 01" disabled aria-label="Hex bytes" data-i18n-placeholder="console.placeholder" data-i18n-aria="console.inputLabel">
+              <button id="rawSend" class="needs-conn" disabled data-i18n="console.send">Send</button>
+            </div>
+            <div class="hint" data-i18n-rich="console.hint">Set Speed (02 …) is blocked if it is above the limit, larger than the maximum change, or comes too soon after the last speed command. Start (07) only after confirmation, Set Target Heart Rate (06) not at all. Everything else is sent raw.</div>
+          </div>
+        </details>
+        <details class="card wide" id="logCard">
+          <summary data-i18n="console.logTitle">Log</summary>
+          <div class="grid">
+            <div id="log" aria-live="off"></div>
+          </div>
+        </details>
+      </div>
+
+      <!-- History view (src/ui/history/history.ts). While connected, the stop bar keeps Stop in reach. -->
+      <section class="card history-part hist-overview">
+        <div class="card-head">
+          <h2 data-i18n="history.title">History</h2>
+          <button id="openData" class="icon-btn" type="button" aria-label="Backup and saved runs" data-i18n-aria="history.openData"><svg class="icon" aria-hidden="true"><use href="#i-gear"/></svg></button>
+        </div>
+        <div class="periods">
+          <div class="period"><div class="l" data-i18n="history.week">This week</div><div class="v" id="hWeek">–</div><div class="hint" id="hWeekSub"></div></div>
+          <div class="period"><div class="l" data-i18n="history.month">This month</div><div class="v" id="hMonth">–</div><div class="hint" id="hMonthSub"></div></div>
+          <div class="period"><div class="l" data-i18n="history.all">All time</div><div class="v" id="hAll">–</div><div class="hint" id="hAllSub"></div></div>
+        </div>
+        <div>
+          <h3 data-i18n="history.chartTitle">Distance per day, last 30 days</h3>
+          <canvas id="dayChart" role="img" aria-label="Distance per day, last 30 days" data-i18n-aria="history.chartLabel"></canvas>
+          <div class="hint" id="dayReadout"></div>
+          <table class="sr-only" id="dayTable"></table>
+        </div>
+        <dl class="records">
+          <div><dt data-i18n="history.streak">Days in a row</dt><dd id="hStreak">–</dd></div>
+          <div><dt data-i18n="history.farthest">Farthest run</dt><dd id="hFarthest">–</dd></div>
+          <div><dt data-i18n="history.longest">Longest run</dt><dd id="hLongest">–</dd></div>
+          <div><dt data-i18n="history.bestWeek">Best week</dt><dd id="hBestWeek">–</dd></div>
+        </dl>
+        <p class="hint" id="hDemoNote" data-i18n="history.demoNote" hidden>Demo runs are listed but not counted.</p>
+      </section>
+
+      <section class="card grid history-part">
+        <h2 data-i18n="history.runsTitle">Runs</h2>
+        <p class="hint" id="runEmpty" data-i18n="history.empty" hidden>No runs yet.</p>
+        <ul id="runList" class="runs"></ul>
+        <button id="runMore" type="button" data-i18n="history.more" hidden>Show more</button>
+      </section>
+
+      <!-- Workouts view (src/ui/workouts/workout-ui.ts): library, editor and week plan. A workout is started from the training view. -->
+      <section class="card grid workouts-part">
+        <div class="head-row">
+          <h2 data-i18n="workouts.mineTitle">My workouts</h2>
+          <div class="row">
+            <button id="wkImport" type="button" data-i18n="workouts.import">Import workout package</button>
+            <button id="wkNew" type="button" data-i18n="workouts.create">New workout</button>
+          </div>
+        </div>
+        <input type="file" id="wkFile" accept=".walkflow,application/json" aria-label="Workout package" data-i18n-aria="workouts.fileLabel" hidden>
+        <p class="hint" id="wkImportStatus" role="status"></p>
+        <p class="hint" id="wkEmpty" data-i18n="workouts.empty" hidden>No saved workouts yet.</p>
+        <ul id="wkList" class="wk-list"></ul>
+        <p class="hint" id="wkStorage" hidden></p>
+        <h3 data-i18n="workouts.examplesTitle">Examples</h3>
+        <ul id="wkExamples" class="wk-list"></ul>
+      </section>
+
+      <section class="card grid workouts-part" id="wkEditor" hidden>
+        <h2 id="wkEditorTitle"></h2>
+        <label class="hint field"><span data-i18n="workouts.name">Name</span>
+          <input type="text" id="wkName" maxlength="60" autocomplete="off">
+        </label>
+        <div>
+          <h3 data-i18n="workouts.steps">Steps</h3>
+          <ol id="wkSteps" class="wk-steps"></ol>
+        </div>
+        <div class="row"><button id="wkAdd" type="button" data-i18n="workouts.addStep">Add step</button></div>
+        <p class="hint" id="wkTotal"></p>
+        <p class="hint incl-only" data-i18n="workouts.inclHint">The incline is optional and not sent to the treadmill yet.</p>
+        <details>
+          <summary data-i18n="workouts.textTitle">As text</summary>
+          <div class="grid">
+            <textarea id="wkText" spellcheck="false" aria-label="As text" data-i18n-aria="workouts.textTitle"></textarea>
+            <div class="hint" data-i18n-rich="workouts.textHint">One step per line.</div>
+            <div class="row"><button id="wkApplyText" type="button" data-i18n="workouts.applyText">Use this text</button></div>
+          </div>
+        </details>
+        <div class="row">
+          <button id="wkSave" type="button" class="primary" data-i18n="workouts.save">Save</button>
+          <button id="wkCancel" type="button" data-i18n="workouts.cancel">Cancel</button>
+        </div>
+        <p class="hint" id="wkStatus" role="status"></p>
+      </section>
+
+      <section class="card grid workouts-part">
+        <h2 data-i18n="workouts.planTitle">Week plan</h2>
+        <p class="hint" data-i18n="workouts.planHint">Minutes of walking per day.</p>
+        <ul id="planList" class="plan"></ul>
+        <p class="hint" id="planSummary" role="status"></p>
+      </section>
+
+      <!-- Routes view (src/ui/routes/route-ui.ts): GPX import and export, the library. Progress is shown in the training view. -->
+      <section class="card grid routes-part">
+        <div class="head-row">
+          <h2 data-i18n="routes.mineTitle">My routes</h2>
+          <button id="rtImport" type="button" data-i18n="routes.import">Import GPX file or route package</button>
+        </div>
+        <input type="file" id="rtFile" accept=".gpx,.xml,.walkflow,application/gpx+xml,application/xml,text/xml" aria-label="GPX file or route package" data-i18n-aria="routes.fileLabel" hidden>
+        <p class="hint" id="rtEmpty" data-i18n="routes.empty" hidden>No routes yet.</p>
+        <ul id="rtList" class="wk-list"></ul>
+        <p class="hint" id="rtStorage" hidden></p>
+        <p class="hint" id="rtStatus" role="status"></p>
+        <p class="hint" data-i18n="routes.hint">A route only shows where you are along it.</p>
+      </section>
+
+      <!-- Route store (src/ui/routes/route-store.ts): routes from the route-store repository, read from GitHub when the list is opened -->
+      <section class="card grid routes-part" id="rsStore">
+        <div class="head-row">
+          <h2 data-i18n="routeStore.title">Route store</h2>
+          <button id="rsToggle" type="button" data-i18n="routeStore.show">Show the route store</button>
+        </div>
+        <div id="rsBody" class="grid" hidden>
+          <div class="cm-filters">
+            <label class="hint field"><span data-i18n="routeStore.search">Search</span><input type="text" id="rsText" autocomplete="off"></label>
+            <label class="hint field"><span data-i18n="routeStore.country">Country</span><select id="rsCountry"></select></label>
+            <label class="hint field"><span data-i18n="routeStore.tag">Tag</span><select id="rsTag"></select></label>
+          </div>
+          <p class="hint" id="rsStatus" role="status"></p>
+          <ul id="rsList" class="wk-list"></ul>
+          <p class="hint" data-i18n="routeStore.contribute">You can add your own routes.</p>
+        </div>
+      </section>
+
+      <!-- Community view (src/ui/community/community.ts): routes and workouts that other devices share, and what you take from them -->
+      <section class="card grid community-part">
+        <div class="head-row">
+          <h2 data-i18n="community.title">Community</h2>
+        </div>
+        <label class="switch">
+          <input type="checkbox" role="switch" id="cmSwitch">
+          <span class="sw-track" aria-hidden="true"></span>
+          <span class="sw-text"><strong data-i18n="community.switch">Take part in the community</strong><span class="hint" data-i18n="community.notice">Notice.</span></span>
+        </label>
+        <p class="hint" id="cmStatus" role="status"></p>
+      </section>
+      <section class="card grid community-part" id="cmFinder" hidden>
+        <div class="cm-filters">
+          <label class="hint field"><span data-i18n="community.search">Search</span><input type="text" id="cmText" autocomplete="off"></label>
+          <label class="hint field"><span data-i18n="community.kind">Kind</span><select id="cmKind"></select></label>
+          <label class="hint field"><span data-i18n="community.country">Country</span><select id="cmCountry"></select></label>
+          <label class="hint field"><span data-i18n="community.tag">Tag</span><select id="cmTag"></select></label>
+          <label class="hint field"><span data-i18n="community.roomLang">Language of the room</span><select id="cmLang"></select></label>
+        </div>
+        <p class="hint" id="cmEmpty" hidden></p>
+        <ul id="cmList" class="wk-list"></ul>
+        <p class="hint"><button type="button" id="cmUnhide" hidden></button></p>
+      </section>
+    </div>
+
+    <div class="side">
+      <section class="card control">
+        <h2 data-i18n="control.title">Controls</h2>
+        <div id="demoBanner" class="banner demo" hidden>
+          <span data-i18n-rich="demo.banner">Demo: simulated treadmill, no real hardware, all values are simulated.</span>
+          <div class="row">
+            <button id="simLoss" type="button" data-i18n="demo.simLoss">Simulate connection loss</button>
+            <button id="simKey" type="button" data-i18n="demo.simKey">Pull safety key</button>
+          </div>
+        </div>
+        <div class="dock">
+          <div class="adjust">
+            <button id="minus" class="needs-conn step-btn" disabled aria-label="Decrease speed by 0.5 km/h"><span class="sign" aria-hidden="true">−</span><span class="step-val" aria-hidden="true">0.5</span></button>
+            <div class="target"><div class="l" data-i18n="control.target">Target</div><div id="target">3.0 km/h</div></div>
+            <button id="plus" class="needs-conn step-btn" disabled aria-label="Increase speed by 0.5 km/h"><span class="sign" aria-hidden="true">+</span><span class="step-val" aria-hidden="true">0.5</span></button>
+          </div>
+          <div class="row actions">
+            <button id="start" class="primary needs-conn" disabled><svg class="icon" aria-hidden="true"><use href="#i-walkflow"/></svg><span id="startLabel">Start</span></button>
+            <button id="pause" class="needs-conn" disabled><svg class="icon" aria-hidden="true"><use href="#i-pause"/></svg><span data-i18n="control.pause">Pause</span></button>
+            <button id="stop" class="stop needs-conn" disabled><svg class="icon" aria-hidden="true"><use href="#i-stop"/></svg><span data-i18n="control.stop">Stop</span></button>
+          </div>
+        </div>
+        <input type="range" id="slider" class="needs-conn" min="1" max="6" step="0.1" value="3" disabled aria-label="Target speed" data-i18n-aria="control.sliderLabel">
+        <div class="hint center" id="rampInfo">&nbsp;</div>
+        <div class="row presets">
+          <button type="button" class="preset" data-preset="slow" disabled><svg class="icon pace-slow" aria-hidden="true"><use href="#i-pace-slow"/></svg><span class="pv"></span></button>
+          <button type="button" class="preset" data-preset="mid" disabled><svg class="icon pace-mid" aria-hidden="true"><use href="#i-pace-mid"/></svg><span class="pv"></span></button>
+          <button type="button" class="preset" data-preset="run" disabled><svg class="icon pace-run" aria-hidden="true"><use href="#i-pace-run"/></svg><span class="pv"></span></button>
+        </div>
+        <div class="hint"><span data-i18n-rich="control.keys">Keyboard: Space or Esc = stop, ↑ / ↓ = speed ±0.5 (not in the slider or a text field).</span> <span id="globalStopHint"></span></div>
+        <div class="hint" data-i18n="control.rampHint">The app approaches larger jumps in steps (see settings). Stop always takes effect immediately.</div>
+      </section>
+      <section class="card grid incline" id="inclCard" hidden>
+        <h2 data-i18n="incline.title">Incline</h2>
+        <div class="mid" id="inclTarget">0.0 %</div>
+        <input type="range" id="inclSlider" min="0" max="15" step="1" value="0" disabled aria-label="Target incline" data-i18n-aria="incline.sliderLabel">
+        <div id="inclLevels" class="seg seg-auto" role="radiogroup" data-i18n-aria="incline.levelsAria" aria-label="Incline levels" hidden></div>
+        <div class="hint" id="inclInfo"></div>
+      </section>
+    </div>
+  </div>
+
+  <footer class="hint" id="footer">
+    <span id="footerVersion"></span>
+    <span id="footerLinks"></span>
+  </footer>
+</div>
+<!-- Settings (src/ui/settings/settings-ui.ts): one large dialog with sections. The element ids are the same as when these were cards in
+     the page; the code that reads and writes them does not care where they sit. -->
+<dialog id="settingsDlg" class="settings-dlg" aria-labelledby="settingsTitle">
+  <div class="sd-head">
+    <h2 id="settingsTitle" data-i18n="settings.title">Settings &amp; data</h2>
+    <button id="settingsClose" type="button" class="icon-btn" aria-label="Close" data-i18n-aria="settings.close"><svg class="icon" aria-hidden="true"><use href="#i-close"/></svg></button>
+  </div>
+  <div class="sd-main">
+    <div class="sd-tabs" role="tablist" aria-label="Settings sections" data-i18n-aria="settings.tabsLabel">
+      <button type="button" role="tab" id="tab-general" aria-controls="sd-general" data-tab="general" data-i18n="settings.tabGeneral">General</button>
+      <button type="button" role="tab" id="tab-safety" aria-controls="sd-safety" data-tab="safety" data-i18n="settings.tabSafety">Safety</button>
+      <button type="button" role="tab" id="tab-treadmill" aria-controls="sd-treadmill" data-tab="treadmill" data-i18n="settings.tabTreadmill">Treadmill</button>
+      <button type="button" role="tab" id="tab-data" aria-controls="sd-data" data-tab="data" data-i18n="settings.tabData">Data</button>
+      <button type="button" role="tab" id="tab-info" aria-controls="sd-info" data-tab="info" data-i18n="settings.tabInfo">Info</button>
+    </div>
+    <div class="sd-panels">
+      <section class="sd-panel grid" id="sd-general" role="tabpanel" aria-labelledby="tab-general">
+        <div>
+          <div class="menu-label" id="langLabel" data-i18n="languageLabel">Language</div>
+          <div id="langOptions" class="menu-list" role="radiogroup" aria-labelledby="langLabel"></div>
+        </div>
+        <div>
+          <div class="menu-label" id="themeLabel" data-i18n="theme.label">Theme</div>
+          <div id="themeOptions" class="seg" role="radiogroup" aria-labelledby="themeLabel"></div>
+        </div>
+        <div>
+          <div class="menu-label" id="paletteLabel" data-i18n="palette.label">Colours</div>
+          <div id="paletteOptions" class="seg" role="radiogroup" aria-labelledby="paletteLabel"></div>
+        </div>
+        <div>
+          <div class="menu-label" id="unitsLabel" data-i18n="unitSystem.label">Units</div>
+          <div id="unitsOptions" class="seg" role="radiogroup" aria-labelledby="unitsLabel"></div>
+        </div>
+        <hr>
+        <label class="switch">
+          <input type="checkbox" role="switch" id="devSwitch">
+          <span class="sw-track" aria-hidden="true"></span>
+          <span class="sw-text"><strong data-i18n="settings.devLabel">Developer mode</strong><span class="hint" data-i18n="settings.devHint">Shows the experiment console.</span></span>
+        </label>
+      </section>
+
+      <section class="sd-panel grid" id="sd-safety" role="tabpanel" aria-labelledby="tab-safety" hidden>
+        <label class="hint field"><span data-i18n="settings.limit">Personal speed limit (km/h)</span>
+          <input type="text" inputmode="decimal" autocomplete="off" id="cap" value="6">
+        </label>
+        <label class="hint field"><span data-i18n="settings.maxStep">Maximum change per command (km/h)</span>
+          <input type="text" inputmode="decimal" autocomplete="off" id="maxStep" value="0.5">
+        </label>
+        <label class="hint field"><span data-i18n="settings.hiddenMode">When the tab goes to the background while the belt is running</span>
+          <select id="hiddenMode">
+            <option value="warn" data-i18n="settings.hiddenWarn">only warn</option>
+            <option value="pause" data-i18n="settings.hiddenPause">pause the belt</option>
+          </select>
+        </label>
+        <div class="hint" id="rangeInfo"></div>
+        <hr>
+        <label class="switch">
+          <input type="checkbox" role="switch" id="quietSwitch">
+          <span class="sw-track" aria-hidden="true"></span>
+          <span class="sw-text"><strong data-i18n="settings.quietLabel">Hide warnings and safety questions</strong><span class="hint" data-i18n="settings.quietHint">Hides the safety notice and the question before every start.</span></span>
+        </label>
+      </section>
+
+      <section class="sd-panel grid" id="sd-treadmill" role="tabpanel" aria-labelledby="tab-treadmill" hidden>
+        <h3 data-i18n="presets.title">Speed presets</h3>
+        <p class="hint" data-i18n="presets.hint">The three buttons under the speed slider in the training view.</p>
+        <div class="preset-rows">
+          <div class="preset-row">
+            <span class="preset-name"><svg class="icon pace-slow" aria-hidden="true"><use href="#i-pace-slow"/></svg><span id="presetLabel-slow" data-i18n="presets.slow">Slow</span></span>
+            <span class="preset-input"><input type="text" inputmode="decimal" autocomplete="off" id="preset-slow" aria-labelledby="presetLabel-slow" aria-describedby="presetErr-slow"><span class="preset-unit">km/h</span></span>
+            <div class="preset-err" id="presetErr-slow" aria-live="polite"></div>
+          </div>
+          <div class="preset-row">
+            <span class="preset-name"><svg class="icon pace-mid" aria-hidden="true"><use href="#i-pace-mid"/></svg><span id="presetLabel-mid" data-i18n="presets.mid">Normal</span></span>
+            <span class="preset-input"><input type="text" inputmode="decimal" autocomplete="off" id="preset-mid" aria-labelledby="presetLabel-mid" aria-describedby="presetErr-mid"><span class="preset-unit">km/h</span></span>
+            <div class="preset-err" id="presetErr-mid" aria-live="polite"></div>
+          </div>
+          <div class="preset-row">
+            <span class="preset-name"><svg class="icon pace-run" aria-hidden="true"><use href="#i-pace-run"/></svg><span id="presetLabel-run" data-i18n="presets.run">Run</span></span>
+            <span class="preset-input"><input type="text" inputmode="decimal" autocomplete="off" id="preset-run" aria-labelledby="presetLabel-run" aria-describedby="presetErr-run"><span class="preset-unit">km/h</span></span>
+            <div class="preset-err" id="presetErr-run" aria-live="polite"></div>
+          </div>
+        </div>
+        <p class="hint" id="presetRange"></p>
+        <div class="incl-only grid">
+          <hr>
+          <label class="hint field"><span data-i18n="incline.levelsLabel">Incline levels</span>
+            <span class="range-row"><input type="range" id="inclLevelsInput" min="1" max="10" step="1" value="1"><output id="inclLevelsValue" for="inclLevelsInput"></output></span>
+          </label>
+          <div class="hint" data-i18n="incline.levelsHint"></div>
+        </div>
+      </section>
+
+      <section class="sd-panel grid" id="sd-data" role="tabpanel" aria-labelledby="tab-data" hidden>
+        <div class="grid">
+          <h3 data-i18n="history.dataTitle">Saved runs</h3>
+          <label class="check"><input type="checkbox" id="autoSave" checked> <span data-i18n="history.autoSave">Save runs automatically</span></label>
+          <p class="hint" id="storageInfo"></p>
+          <div class="row">
+            <button id="backup" type="button" data-i18n="history.backup">Download backup</button>
+            <button id="restore" type="button" data-i18n="history.restore">Restore backup</button>
+            <button id="deleteAll" type="button" data-i18n="history.deleteAll">Delete all runs</button>
+          </div>
+          <input type="file" id="restoreFile" accept=".json,application/json" hidden>
+          <p class="hint" data-i18n="history.backupHint">The backup is a JSON file with all runs.</p>
+          <p class="hint" id="histStatus" role="status"></p>
+        </div>
+        <hr>
+        <div class="grid">
+          <h3 data-i18n="settings.recordingTitle">Current recording</h3>
+          <div class="row">
+            <button id="csv" data-i18n="settings.csv">Export CSV</button>
+            <button id="tcx" data-i18n="settings.tcx">Export TCX</button>
+            <button id="clear" data-i18n="settings.clear">Clear recording</button>
+          </div>
+          <label class="hint field"><span data-i18n="settings.tcxSport">Sport in the TCX file (Strava, Garmin Connect &amp; co.)</span>
+            <select id="tcxSport">
+              <option value="Running" data-i18n="settings.sportRunning">Running/walking (Running)</option>
+              <option value="Other" data-i18n="settings.sportOther">Other (Other)</option>
+            </select>
+          </label>
+          <div class="hint" data-i18n="settings.tcxHint">TCX contains time, distance, speed, kcal and heart rate (if available) from the first to the last moment with movement. Values come from the device and may be inaccurate.</div>
+        </div>
+      </section>
+
+      <section class="sd-panel" id="sd-info" role="tabpanel" aria-labelledby="tab-info" hidden>
+        <p class="hint" id="infoVersion"></p>
+        <h3 data-i18n="info.safetyTitle">Safety and liability</h3>
+        <ul id="infoDisclaimer"></ul>
+        <h3 data-i18n="info.testedTitle">Tested with</h3>
+        <p id="infoTested"></p>
+        <p id="infoAffiliation"></p>
+        <h3 data-i18n="info.privacyTitle">Privacy</h3>
+        <p data-i18n="info.privacy">No accounts, no server, no tracking, no external scripts or fonts. Only if you show the map of a route, it loads map data from a map server (by default OpenFreeMap, tiles.openfreemap.org), which sees your IP address and the part of the map you look at. Settings (limit, ramp, language, theme, accepted notice) are stored only locally in this browser. The saved runs stay on this device too.</p>
+        <div id="infoDesktopPrivacy" hidden>
+          <p data-i18n="info.desktopPrivacy">On startup, the desktop app asks GitHub whether there is a newer version. You can turn this off here:</p>
+          <label class="check"><input type="checkbox" id="updateCheck" checked> <span data-i18n="info.updateCheck">check for updates</span></label>
+        </div>
+        <!-- Web build only (src/ui/install.ts): install the web app as an app of its own -->
+        <div id="infoInstall" hidden>
+          <h3 data-i18n="info.installTitle">Install as an app</h3>
+          <p id="installText"></p>
+          <button id="installBtn" type="button" class="primary" data-i18n="info.installButton" hidden>Install Walkflow</button>
+        </div>
+        <h3 data-i18n="info.licenseTitle">License</h3>
+        <p><span data-i18n="info.license">MIT license, without warranty.</span> <span id="infoSource"></span></p>
+        <!-- A plain link; the button image is Ko-fi's own (storage.ko-fi.com/cdn/kofi6.png), served from here so nothing is loaded from Ko-fi (src/platform/donation.ts) -->
+        <h3 data-i18n="info.supportTitle">Support Walkflow</h3>
+        <p data-i18n="info.supportText">Walkflow is free and stays free. If you like it, you can support it voluntarily.</p>
+        <a id="supportLink" class="support" href="https://ko-fi.com/walkflowapp" target="_blank" rel="noopener noreferrer" data-i18n-aria="info.supportButton" aria-label="Support on Ko-fi"><img src="img/kofi.png" width="143" height="36" alt=""></a>
+      </section>
+    </div>
+  </div>
+</dialog>
+</body>
+</html>
